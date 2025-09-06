@@ -45,8 +45,42 @@ int increment_password(char *password, const char *charset, int charset_len, int
     // - Se não estourou: atualizar caractere e retornar 1
     // - Se estourou: definir como primeiro caractere e continuar loop
     // - Se todos estouraram: retornar 0 (fim do espaço)
+
+
+
+    // - Percorrer password de trás para frente
+    for (int i = password_len - 1; i >= 0; i--) {
+    // inicializa int de index
+    int atual_idx = -1;
+
+    // - Para cada posição, encontrar índice atual no charset
+        for (int j = 0; j < charset_len; j++) { 
+            if (password[i] == charset[j]) {
+                atual_idx = j;
+                break; // se encontrar quebra o looping
+            }
+        }
+
+        if (atual_idx == -1) {
+            // Senha não está conforme vetor charset (character não encontrada)
+            return -1;
+        }
+
+        // - Incrementar índice
+        if (atual_idx  < charset_len - 1) {
+            // - Se não estourou: atualizar caractere e retornar 1
+            password[i] = charset[atual_idx + 1];
+            return 1;
+        }
+        else {
+        // - Se estourou: definir como primeiro caractere e continuar loop
+        password[i] = charset[0];  
+        }
+    }
+    // - Se todos estouraram: retornar 0 (fim do espaço)
+    return 0;  
     
-    return 0;  // SUBSTITUA por sua implementação
+    // SUBSTITUA por sua implementação
 }
 
 /**
