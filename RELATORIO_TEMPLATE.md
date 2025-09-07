@@ -34,8 +34,8 @@
 
 **Como você garantiu que apenas um worker escrevesse o resultado?**
 
-[Explique como você implementou uma escrita atômica e como isso evita condições de corrida]
-Leia sobre condições de corrida (aqui)[https://pt.stackoverflow.com/questions/159342/o-que-%C3%A9-uma-condi%C3%A7%C3%A3o-de-corrida]
+A cláusula do open() que impede com que a condição de corrida ocorra é a combinação do O_CREAT com o O_EXCL, basicamente o O_CREAT permite com que se o arquivo não existir o open consiga também realizar a sua criação antes de abrir, porém o O_EXCL colocado na função garante que o arquivo não pode existir, isto é que a criação precisa ser exclusiva. Neste sentido, caso o worker tente escrever o resultado que já foi escrito por outra thread, o arquivo já teria sido criado e a função open() retornaria com falha por conta das flags passadas como parâmetro da função.
+
 
 **Como o coordinator consegue ler o resultado?**
 
