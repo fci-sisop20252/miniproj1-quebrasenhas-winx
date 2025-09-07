@@ -47,7 +47,6 @@ int increment_password(char *password, const char *charset, int charset_len, int
     // - Se todos estouraram: retornar 0 (fim do espaço)
 
 
-
     // - Percorrer password de trás para frente
     for (int i = password_len - 1; i >= 0; i--) {
     // inicializa int de index
@@ -113,8 +112,8 @@ void save_result(int worker_id, const char *password) {
     // IMPLEMENTE AQUI:
     // - Tentar abrir arquivo com O_CREAT | O_EXCL | O_WRONLY
 
-    void save_result(int worker_id, const char *password) {
     int fd = open(RESULT_FILE, O_CREAT | O_EXCL | O_WRONLY, 0644);
+    printf("fd: %d \n", fd);
     if (fd >= 0) {
         char buffer[256];
         int len = snprintf(buffer, sizeof(buffer), "%d:%s\n", worker_id, password);
@@ -126,20 +125,12 @@ void save_result(int worker_id, const char *password) {
 
     // - Se sucesso: escrever resultado e fechar
     // - Se falhou: outro worker já encontrou
-}
 
 /**
  * Função principal do worker
  */
 int main(int argc, char *argv[]) {
 
-    // // CÓDIGO DE TESTE - REMOVER DEPOIS
-    // char test[4] = "aaa";
-    // for (int i = 0; i < 10; i++) {
-    //     printf("Senha %d: %s\n", i, test);
-    //     increment_password(test, "abc", 3, 3);
-    // }
-    // return 0;  // Sair após teste 
 
     // Validar argumentos
     if (argc != 7) {
@@ -179,6 +170,9 @@ int main(int argc, char *argv[]) {
         // IMPORTANTE: Use a biblioteca MD5 FORNECIDA - md5_string(senha, hash_buffer)
         md5_string(current_password, computed_hash);
         
+        // Contabilizar comparação antes do break 
+        passwords_checked++;
+
         // TODO 5: Comparar com o hash alvo
         // Se encontrou: salvar resultado e terminar
         if (strcmp(computed_hash, target_hash) == 0) {
@@ -189,6 +183,8 @@ int main(int argc, char *argv[]) {
 
         // TODO 6: Incrementar para a próxima senha
         // DICA: Use a função increment_password implementada acima
+        int next_password;
+
         next_password = increment_password(current_password, charset, charset_len, password_len);
 
         
@@ -198,8 +194,12 @@ int main(int argc, char *argv[]) {
             printf("[Worker %d] Senha não encontrada (todas as possibilidades testadas): %s\n", worker_id, current_password);
             break;
         }
-        
-        passwords_checked++;
+
+        if (next_password == -1) {
+            printf("[Worker %d] Senha não corresponde aos caracteres do charset: %s\n", worker_id, current_password);
+            break;
+        }
+
     }
     
     // Estatísticas finais
