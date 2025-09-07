@@ -112,6 +112,18 @@ void save_result(int worker_id, const char *password) {
     
     // IMPLEMENTE AQUI:
     // - Tentar abrir arquivo com O_CREAT | O_EXCL | O_WRONLY
+
+    void save_result(int worker_id, const char *password) {
+    int fd = open(RESULT_FILE, O_CREAT | O_EXCL | O_WRONLY, 0644);
+    if (fd >= 0) {
+        char buffer[256];
+        int len = snprintf(buffer, sizeof(buffer), "%d:%s\n", worker_id, password);
+        write(fd, buffer, len);
+        close(fd);
+        printf("[Worker %d] Resultado salvo!\n", worker_id);
+    }
+}
+
     // - Se sucesso: escrever resultado e fechar
     // - Se falhou: outro worker já encontrou
 }
@@ -120,6 +132,15 @@ void save_result(int worker_id, const char *password) {
  * Função principal do worker
  */
 int main(int argc, char *argv[]) {
+
+    // // CÓDIGO DE TESTE - REMOVER DEPOIS
+    // char test[4] = "aaa";
+    // for (int i = 0; i < 10; i++) {
+    //     printf("Senha %d: %s\n", i, test);
+    //     increment_password(test, "abc", 3, 3);
+    // }
+    // return 0;  // Sair após teste 
+
     // Validar argumentos
     if (argc != 7) {
         fprintf(stderr, "Uso interno: %s <hash> <start> <end> <charset> <len> <id>\n", argv[0]);
@@ -156,15 +177,27 @@ int main(int argc, char *argv[]) {
         
         // TODO 4: Calcular o hash MD5 da senha atual
         // IMPORTANTE: Use a biblioteca MD5 FORNECIDA - md5_string(senha, hash_buffer)
+        md5_string(current_password, computed_hash);
         
         // TODO 5: Comparar com o hash alvo
         // Se encontrou: salvar resultado e terminar
-        
+        if (strcmp(computed_hash, target_hash) == 0) {
+            printf("[Worker %d] SENHA ENCONTRADA: %s\n", worker_id, current_password);
+            save_result(worker_id, current_password);
+            break;
+        }
+
         // TODO 6: Incrementar para a próxima senha
         // DICA: Use a função increment_password implementada acima
+        next_password = increment_password(current_password, charset, charset_len, password_len);
+
         
         // TODO: Verificar se chegou ao fim do intervalo
         // Se sim: terminar loop
+        if (next_password == 0) {
+            printf("[Worker %d] Senha não encontrada (todas as possibilidades testadas): %s\n", worker_id, current_password);
+            break;
+        }
         
         passwords_checked++;
     }
