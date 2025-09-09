@@ -8,25 +8,28 @@
 #include <time.h>
 #include "hash_utils.h"
 
+
 /**
  * PROCESSO COORDENADOR - Mini-Projeto 1: Quebra de Senhas Paralelo
- * 
+ *
  * Este programa coordena múltiplos workers para quebrar senhas MD5 em paralelo.
  * O MD5 JÁ ESTÁ IMPLEMENTADO - você deve focar na paralelização (fork/exec/wait).
- * 
+ *
  * Uso: ./coordinator <hash_md5> <tamanho> <charset> <num_workers>
- * 
+ *
  * Exemplo: ./coordinator "900150983cd24fb0d6963f7d28e17f72" 3 "abc" 4
- * 
+ *
  * SEU TRABALHO: Implementar os TODOs marcados abaixo
  */
+
 
 #define MAX_WORKERS 16
 #define RESULT_FILE "password_found.txt"
 
+
 /**
  * Calcula o tamanho total do espaço de busca
- * 
+ *
  * @param charset_len Tamanho do conjunto de caracteres
  * @param password_len Comprimento da senha
  * @return Número total de combinações possíveis
@@ -39,17 +42,18 @@ long long calculate_search_space(int charset_len, int password_len) {
     return total;
 }
 
+
 /**
  * Converte um índice numérico para uma senha
  * Usado para definir os limites de cada worker
- * 
+ *
  * @param index Índice numérico da senha
  * @param charset Conjunto de caracteres
  * @param charset_len Tamanho do conjunto
  * @param password_len Comprimento da senha
  * @param output Buffer para armazenar a senha gerada
  */
-void index_to_password(long long index, const char *charset, int charset_len, 
+void index_to_password(long long index, const char *charset, int charset_len,
                        int password_len, char *output) {
     for (int i = password_len - 1; i >= 0; i--) {
         output[i] = charset[index % charset_len];
@@ -58,6 +62,7 @@ void index_to_password(long long index, const char *charset, int charset_len,
     output[password_len] = '\0';
 }
 
+
 /**
  * Função principal do coordenador
  */
@@ -65,10 +70,11 @@ int main(int argc, char *argv[]) {
     // TODO 1: Validar argumentos de entrada
     // Verificar se argc == 5 (programa + 4 argumentos)
     // Se não, imprimir mensagem de uso e sair com código 1
-    
+   
     // IMPLEMENTE AQUI: verificação de argc e mensagem de erro
     if (argc != 5){
-        fprintf(stderr, "Uso: %s <hash_md5> <tamanho> <charset> <num_workers>\n", argv[0]); 
+        fprintf(stderr, "Uso: %s <hash_md5> <tamanho> <charset> <num_workers>\n", argv[0]); // saída de mensagens de erro 
+        // -e diagnósticos de um programa de computador, separando-o da saída normal (stdout), é direcionado para o terminal
         // verificar ser realmente esta certo e o q significa
         exit(1);
     }
@@ -78,7 +84,7 @@ int main(int argc, char *argv[]) {
     const char *charset = argv[3];
     int num_workers = atoi(argv[4]);
     int charset_len = strlen(charset);
-    
+   
     // TODO: Adicionar validações dos parâmetros
     // - password_len deve estar entre 1 e 10
     if (password_len < 1 || password_len > 10) {
@@ -96,64 +102,70 @@ int main(int argc, char *argv[]) {
         exit(1);
     }
 
+
     printf("=== Mini-Projeto 1: Quebra de Senhas Paralelo ===\n");
     printf("Hash MD5 alvo: %s\n", target_hash);
     printf("Tamanho da senha: %d\n", password_len);
     printf("Charset: %s (tamanho: %d)\n", charset, charset_len);
     printf("Número de workers: %d\n", num_workers);
-    
+   
     // Calcular espaço de busca total
     long long total_space = calculate_search_space(charset_len, password_len);
     printf("Espaço de busca total: %lld combinações\n\n", total_space);
-    
+   
     // Remover arquivo de resultado anterior se existir
     unlink(RESULT_FILE);    
     // Registrar tempo de início
     time_t start_time = time(NULL);
-    
+   
     // TODO 2: Dividir o espaço de busca entre os workers
     // Calcular quantas senhas cada worker deve verificar
     // DICA: Use divisão inteira e distribua o resto entre os primeiros workers
-    
+   
     // IMPLEMENTE AQUI:
     // long long passwords_per_worker = ?
     long long base = total_space / num_workers;
 
+
     // long long remaining = ?
     long long resto = total_space % num_workers;
-    
+   
     // Arrays para armazenar PIDs dos workers
     pid_t workers[MAX_WORKERS];
-    
+   
     // TODO 3: Criar os processos workers usando fork()
     printf("Iniciando workers...\n");
-    
+   
     // IMPLEMENTE AQUI: Loop para criar workers
-    long long inicio = 0; // precisa?
+    long long inicio = 0; 
     for (int i = 0; i < num_workers; i++) {
         // TODO: Calcular intervalo de senhas para este worker
         long long qtd = base + (i < resto ? 1 : 0);
         long long fim = inicio + qtd - 1;
         // TODO: Converter indices para senhas de inicio e fim
-        // char start_pwd[64], end_pwd[64];
-        // index_to_password(inicio, charset, charset_len, password_len, start_pwd);
-        // index_to_password(fim, charset, charset_len, password_len, end_pwd);
-
-        char start_str[32], end_str[32];
-        sprintf(start_str, "%lld", inicio);
-        sprintf(end_str, "%lld", fim);
-        // Preparar strings auxiliares
         char id_str[8], len_str[8];
         sprintf(id_str, "%d", i);
         sprintf(len_str, "%d", password_len);
+        char start_pwd[64], end_pwd[64];
+        index_to_password(inicio, charset, charset_len, password_len, start_pwd);
+        index_to_password(fim, charset, charset_len, password_len, end_pwd);
+
+
+        // char start_str[32], end_str[32];
+        // sprintf(start_str, "%lld", inicio);
+        // sprintf(end_str, "%lld", fim);
+        // Preparar strings auxiliares
+
         // char start_str[32], end_str[32], id_str[8], len_str[8];
         // sprintf(start_str, "%lld", inicio);
         // sprintf(end_str, "%lld", fim);
         // sprintf(id_str, "%d", i);
         // sprintf(len_str, "%d", password_len);
-        char start_pwd[64], end_pwd[64];
-        index_to_password(inicio, charset, charset_len, password_len, start_pwd);
-        index_to_password(fim, charset, charset_len, password_len, end_pwd);
+
+        // char start_pwd[64], end_pwd[64];
+        // index_to_password(inicio, charset, charset_len, password_len, start_pwd);
+        // index_to_password(fim, charset, charset_len, password_len, end_pwd);
+
 
         // TODO 4: Usar fork() para criar processo filho
         pid_t pid = fork();
@@ -161,16 +173,20 @@ int main(int argc, char *argv[]) {
             perror("Erro em fork"); // TODO 7
             exit(1);
         } else if (pid == 0) {
-            execl("./worker", "worker", // TODO 6
-                  target_hash,start_str, end_str,
-                charset, len_str, id_str,
-                  (char *)NULL);
+            // execl("./worker", "worker", // TODO 6
+            //       target_hash,start_str, end_str,
+            //     charset, len_str, id_str,
+            //       (char *)NULL);
+            execl("./worker", "worker",
+              target_hash, start_pwd, end_pwd,
+              charset, len_str, id_str,
+              (char *)NULL);
             perror("Erro em execl"); // TODO 7
             exit(1);
         } else {
         // TODO 5: No processo pai: armazenar PID
             workers[i] = pid;
-            // char start_pwd[64], end_pwd[64];
+            // char start_pwd[64], end_pwd[64]; // discutir com as meninas qual aceb melhor e mostra os erros
             // index_to_password(inicio, charset, charset_len, password_len, start_pwd);
             // index_to_password(fim, charset, charset_len, password_len, end_pwd);
             printf("Worker %d (PID=%d) intervalo [%s ... %s]\n", i, pid, start_pwd, end_pwd);
@@ -180,12 +196,12 @@ int main(int argc, char *argv[]) {
         // TODO 6: No processo filho: usar execl() para executar worker - implementado dentro do if else
         // TODO 7: Tratar erros de fork() e execl() - implementado dentro do if else
    // }
-    
+   
     printf("\nTodos os workers foram iniciados. Aguardando conclusão...\n");
-    
+   
     // TODO 8: Aguardar todos os workers terminarem usando wait()
     // IMPORTANTE: O pai deve aguardar TODOS os filhos para evitar zumbis
-    
+   
     // IMPLEMENTE AQUI:
     // - Loop para aguardar cada worker terminar
     // - Usar wait() para capturar status de saída
@@ -207,16 +223,16 @@ int main(int argc, char *argv[]) {
             printf("Worker (PID=%d) terminou de forma anormal\n", pid);
         }
     }
-    
+   
     // Registrar tempo de fim
     time_t end_time = time(NULL);
     double elapsed_time = difftime(end_time, start_time);
-    
+   
     printf("\n=== Resultado ===\n");
-    
+   
     // TODO 9: Verificar se algum worker encontrou a senha
     // Ler o arquivo password_found.txt se existir
-    
+   
     // IMPLEMENTE AQUI:
     // - Abrir arquivo RESULT_FILE para leitura
     // - Ler conteúdo do arquivo
@@ -230,12 +246,13 @@ int main(int argc, char *argv[]) {
         close(fd);
         if (n > 0) {
             buffer[n] = '\0';
-            char *sep = strchr(buffer, ':');
+            char *sep = strchr(buffer, ':'); // encontra primeira ocorrência de um caractere específico dentro de uma string
             if (sep) {
                 *sep = '\0';
                 int worker_id = atoi(buffer);
                 char *senha = sep + 1;
                 senha[strcspn(senha, "\r\n")] = '\0';
+
 
                 char hash[33];
                 md5_string(senha, hash);
@@ -252,6 +269,7 @@ int main(int argc, char *argv[]) {
     // Estatísticas finais (opcional)
     // TODO: Calcular e exibir estatísticas de performance
     printf("Tempo total: %.2f segundos\n", elapsed_time);
+
 
     return 0;
 }
