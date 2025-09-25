@@ -93,6 +93,7 @@ A cláusula do open() que impede com que a condição de corrida ocorra é a com
 **Como o coordinator consegue ler o resultado?**
 
 O coordinator lê o resultado aguardando primeiro todos os workers terminarem, usando wait(). Depois, ele tenta abrir o arquivo password_found.txt em modo somente leitura. Se o arquivo existir, o coordinator lê todo o conteúdo para um buffer e localiza o separador : para separar o worker_id da senha encontrada. Em seguida, remove quebras de linha e calcula o MD5 da senha lida, comparando com o hash alvo. Se o hash estiver correto, ele imprime qual worker encontrou a senha; caso contrário, informa que o arquivo contém senha inválida. Se o arquivo não existir, o coordinator assume que nenhum worker encontrou a senha e mostra a mensagem correspondente.
+
 ---
 
 ## 4. Análise de Performance
