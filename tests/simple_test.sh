@@ -153,12 +153,12 @@ else
 fi
 
 # Teste 1: Hash MD5 básico - senha "abc"
-run_test "Hash Simples (abc)" \
-    "900150983cd24fb0d6963f7d28e17f72" \
-    "3" \
-    "abc" \
-    "2" \
-    "abc"
+run_test "Hash Simples (hello)" \
+    "5d41402abc4b2a76b9719d911017c592" \
+    "5" \
+    "abcdefghijklmnopqrstuvwxyz" \
+    "4" \
+    "hello"
 
 # Teste 2: Senha numérica "123" 
 run_test "Senha Numérica (123)" \

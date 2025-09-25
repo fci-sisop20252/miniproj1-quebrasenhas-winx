@@ -92,8 +92,7 @@ A cláusula do open() que impede com que a condição de corrida ocorra é a com
 
 **Como o coordinator consegue ler o resultado?**
 
-[Explique como o coordinator lê o arquivo de resultado e faz o parse da informação]
-
+O coordinator lê o resultado aguardando primeiro todos os workers terminarem, usando wait(). Depois, ele tenta abrir o arquivo password_found.txt em modo somente leitura. Se o arquivo existir, o coordinator lê todo o conteúdo para um buffer e localiza o separador : para separar o worker_id da senha encontrada. Em seguida, remove quebras de linha e calcula o MD5 da senha lida, comparando com o hash alvo. Se o hash estiver correto, ele imprime qual worker encontrou a senha; caso contrário, informa que o arquivo contém senha inválida. Se o arquivo não existir, o coordinator assume que nenhum worker encontrou a senha e mostra a mensagem correspondente.
 ---
 
 ## 4. Análise de Performance
@@ -102,11 +101,13 @@ O speedup é o tempo do teste com 1 worker dividido pelo tempo com 4 workers.
 
 | Teste | 1 Worker | 2 Workers | 4 Workers | Speedup (4w) |
 |-------|----------|-----------|-----------|--------------|
-| Hash: 202cb962ac59075b964b07152d234b70<br>Charset: "0123456789"<br>Tamanho: 3<br>Senha: "123" | ___s | ___s | ___s | ___ |
-| Hash: 5d41402abc4b2a76b9719d911017c592<br>Charset: "abcdefghijklmnopqrstuvwxyz"<br>Tamanho: 5<br>Senha: "hello" | ___s | ___s | ___s | ___ |
+| Hash: 202cb962ac59075b964b07152d234b70<br>Charset: "0123456789"<br>Tamanho: 3<br>Senha: "123" | 0s | 0s | 0s | 0 |
+| Hash: 5d41402abc4b2a76b9719d911017c592<br>Charset: "abcdefghijklmnopqrstuvwxyz"<br>Tamanho: 5<br>Senha: "hello" | 4s | 2s | 8s | 4 |
 
 **O speedup foi linear? Por quê?**
-[Analise se dobrar workers realmente dobrou a velocidade e explique o overhead de criar processos]
+
+Como o primeiro caso deu tudo zero, podemos afirmar que o speedup não é linear ao observar o segundo teste, em que 2 workers tiveram pior desempenho comparado a 1 ou 4 workers. Isso indica que o overhead não foi bem aproveitado, pois o processo é pequeno demais e o tempo de execução do overhead supera o tempo do próprio trabalho.
+
 
 ---
 
