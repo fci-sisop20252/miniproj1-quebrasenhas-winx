@@ -190,7 +190,7 @@ run_test "Charset Maior" \
     "5" \
     "abcdefghijklmnopqrstuvwxyz" \
     "4" \
-    "hello"
+    "teste"
 
 # Teste de Performance
 echo -e "\n${YELLOW}[Teste de Performance] Speedup com Múltiplos Workers${NC}"

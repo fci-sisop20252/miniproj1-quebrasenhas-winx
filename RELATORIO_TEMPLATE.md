@@ -114,7 +114,8 @@ Como o primeiro caso deu tudo zero, podemos afirmar que o speedup não é linear
 
 ## 5. Desafios e Aprendizados
 **Qual foi o maior desafio técnico que você enfrentou?**
-[Descreva um problema e como resolveu. Ex: "Tive dificuldade com o incremento de senha, mas resolvi tratando-o como um contador em base variável"]
+
+Tivemos um pequeno desafio na parte de divisão do espaço de busca entre os workers no coordinator.c, percebemos que quando a divisão não era exata alguns workers ficavam com mais senhas e outros com menos; para resolver isso implementamos uma estratégia em que cada worker recebe uma base de combinações e distribuímos o resto entre os primeiros, além de converter os índices numéricos em senhas reais usando a função index_to_password(), que atua como um contador em base variável, garantindo que cada worker tivesse um intervalo bem definido e equilibrado de senhas para testar.
 
 ---
 
